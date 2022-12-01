@@ -1,4 +1,4 @@
-pub fn string_to_vec_of_ints(input: &str) -> Vec<Vec<i64>> {
+pub fn parse_input_data(input: &str) -> Vec<Vec<i64>> {
     return input
         // Split the string every two end of line characters
         .split("\n\n")
@@ -14,7 +14,7 @@ pub fn string_to_vec_of_ints(input: &str) -> Vec<Vec<i64>> {
 }
 
 pub fn day_1_part_1(data: &str) -> i64 {
-    let data = string_to_vec_of_ints(data);
+    let data = parse_input_data(data);
 
     let sums = data.iter().map(|elf| {
         return elf.iter().sum();
@@ -26,7 +26,7 @@ pub fn day_1_part_1(data: &str) -> i64 {
 }
 
 pub fn day_1_part_2(data: &str) -> i64 {
-    let data = string_to_vec_of_ints(data);
+    let data = parse_input_data(data);
 
     let mut max_a = 0;
     let mut max_b = 0;
