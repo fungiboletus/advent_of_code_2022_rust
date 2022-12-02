@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Action {
     Rock,
     Paper,
@@ -24,6 +24,7 @@ impl std::str::FromStr for Action {
             "B" => Ok(Action::Paper),
             "C" => Ok(Action::Scissors),
 
+            // For Part 1
             "X" => Ok(Action::Rock),
             "Y" => Ok(Action::Paper),
             "Z" => Ok(Action::Scissors),
@@ -32,9 +33,22 @@ impl std::str::FromStr for Action {
     }
 }
 
+impl std::str::FromStr for GameResult {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "X" => Ok(GameResult::Lose),
+            "Y" => Ok(GameResult::Draw),
+            "Z" => Ok(GameResult::Win),
+            _ => Err(()),
+        }
+    }
+}
+
 impl Action {
-    pub fn against(&self, other: &Action) -> GameResult {
-        match (self, other) {
+    pub fn against(&self, opponent_action: &Action) -> GameResult {
+        match (self, opponent_action) {
             (Action::Rock, Action::Rock) => GameResult::Draw,
             (Action::Rock, Action::Paper) => GameResult::Lose,
             (Action::Rock, Action::Scissors) => GameResult::Win,
@@ -64,14 +78,30 @@ impl GameResult {
             GameResult::Lose => 0,
         }
     }
+
+    pub fn compute_move(&self, opponent_action: &Action) -> Action {
+        match self {
+            GameResult::Win => match opponent_action {
+                Action::Rock => Action::Paper,
+                Action::Paper => Action::Scissors,
+                Action::Scissors => Action::Rock,
+            },
+            GameResult::Draw => opponent_action.clone(),
+            GameResult::Lose => match opponent_action {
+                Action::Rock => Action::Scissors,
+                Action::Paper => Action::Rock,
+                Action::Scissors => Action::Paper,
+            },
+        }
+    }
 }
 
-pub fn parse_input_data(input: &str) -> Vec<(Action, Action)> {
+pub fn parse_input_data_part_1(input: &str) -> Vec<(Action, Action)> {
     return input
         // Split by lines
         .lines()
-        .map(|play| {
-            let mut actions = play
+        .map(|game| {
+            let mut actions = game
                 .split_whitespace()
                 .map(|action| action.parse::<Action>().expect("Failed to parse action"))
                 .collect::<VecDeque<Action>>();
@@ -83,21 +113,54 @@ pub fn parse_input_data(input: &str) -> Vec<(Action, Action)> {
         .collect();
 }
 
+pub fn parse_input_data_part_2(input: &str) -> Vec<(Action, GameResult)> {
+    return input
+        .lines()
+        .map(|game| {
+            let mut tuple = game.split_whitespace().collect::<VecDeque<&str>>();
+            let action = tuple
+                .pop_front()
+                .expect("Failed to get action")
+                .parse::<Action>()
+                .expect("Failed to parse action");
+            let game_result = tuple
+                .pop_front()
+                .expect("Failed to get game result")
+                .parse::<GameResult>()
+                .expect("Failed to parse game result");
+            return (action, game_result);
+        })
+        .collect();
+}
+
 pub fn day_2_part_1(data: &str) -> i64 {
-    let games = parse_input_data(data);
+    let played_actions = parse_input_data_part_1(data);
 
-    let game_results = games.iter().map(|(a, b)| b.against(a));
+    let game_results = played_actions.iter().map(|(a, b)| b.against(a));
 
-    let score = games.iter().map(|(_, action)| action.points()).sum::<i64>()
+    let score = played_actions
+        .iter()
+        .map(|(_, action)| action.points())
+        .sum::<i64>()
         + game_results.map(|result| result.points()).sum::<i64>();
 
     return score;
 }
 
 pub fn day_2_part_2(data: &str) -> i64 {
-    let data = parse_input_data(data);
+    let game_results = parse_input_data_part_2(data);
 
-    return data.len() as i64;
+    let played_actions = game_results
+        .iter()
+        .map(|(action, game_result)| game_result.compute_move(action));
+
+    let score = played_actions.map(|action| action.points()).sum::<i64>()
+        + game_results
+            .iter()
+            .map(|(_, game_result)| game_result.points())
+            .sum::<i64>();
+
+    return score;
 }
 
 #[cfg(test)]
@@ -115,6 +178,6 @@ mod tests {
 
     #[test]
     fn test_day_2_part_2() {
-        assert_eq!(day_2_part_2(EXAMPLE), 45000);
+        assert_eq!(day_2_part_2(EXAMPLE), 12);
     }
 }
