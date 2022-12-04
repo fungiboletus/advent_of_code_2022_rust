@@ -46,7 +46,17 @@ pub fn day_4_part_1(data: &str) -> i64 {
 pub fn day_4_part_2(data: &str) -> i64 {
     let ranges = parse_input_data(data);
 
-    return 42;
+    let mut sum = 0;
+    for (range1, range2) in ranges.iter() {
+        // Check if one range overlaps with the other
+        if (range1.start <= range2.start && range1.end >= range2.start)
+            || (range2.start <= range1.start && range2.end >= range1.start)
+        {
+            sum += 1;
+        }
+    }
+
+    return sum;
 }
 
 #[cfg(test)]
@@ -67,6 +77,6 @@ mod tests {
 
     #[test]
     fn test_day_4_part_2() {
-        assert_eq!(day_4_part_2(EXAMPLE), 70);
+        assert_eq!(day_4_part_2(EXAMPLE), 4);
     }
 }
