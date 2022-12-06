@@ -73,6 +73,20 @@ pub fn parse_instructions(input: &str) -> Vec<(usize, usize, usize)> {
         .collect();
 }
 
+pub fn get_stacks_signature(stacks: &Vec<VecDeque<char>>) -> String {
+    // Concatenate the first string of each stack
+    return stacks
+        .iter()
+        .map(|stack| {
+            stack
+                .back()
+                .expect("Unable to get first character")
+                .to_string()
+        })
+        .collect::<Vec<String>>()
+        .join("");
+}
+
 pub fn day_5_part_1(data: &str) -> String {
     let (stacks, instructions) = parse_input_data(data);
     let mut stacks = stacks;
@@ -95,26 +109,32 @@ pub fn day_5_part_1(data: &str) -> String {
     }
 
     //println!("Final Stacks: {:?}", stacks);
-
-    // Concattane the first string of each stack
-    let string = stacks
-        .iter()
-        .map(|stack| {
-            stack
-                .back()
-                .expect("Unable to get first character")
-                .to_string()
-        })
-        .collect::<Vec<String>>()
-        .join("");
-
-    return string;
+    return get_stacks_signature(&stacks);
 }
 
 pub fn day_5_part_2(data: &str) -> String {
-    let ranges = parse_input_data(data);
+    let (stacks, instructions) = parse_input_data(data);
+    let mut stacks = stacks;
 
-    return "98".to_string();
+    for (moves, from, to) in instructions {
+        let mut cratemover_stack: Vec<char> = Vec::new();
+
+        let from_stack = stacks.get_mut(from - 1).expect("Unable to get from stack");
+        for _ in 0..moves {
+            let character = from_stack
+                .pop_back()
+                .expect("Unable to get character from stack");
+            cratemover_stack.push(character);
+        }
+
+        let to_stack = stacks.get_mut(to - 1).expect("Unable to get to stack");
+
+        for character in cratemover_stack.iter().rev() {
+            to_stack.push_back(*character);
+        }
+    }
+
+    return get_stacks_signature(&stacks);
 }
 
 #[cfg(test)]
@@ -137,6 +157,6 @@ move 1 from 1 to 2";
 
     #[test]
     fn test_day_5_part_2() {
-        assert_eq!(day_5_part_2(EXAMPLE), "CMZ");
+        assert_eq!(day_5_part_2(EXAMPLE), "MCD");
     }
 }
