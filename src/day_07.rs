@@ -19,7 +19,7 @@ impl Default for FileSystem {
 
 #[derive(Debug)]
 pub struct Folder {
-    name: String,
+    // name: String,
     subfolders: HashSet<String>,
     files: HashSet<String>,
 }
@@ -27,7 +27,7 @@ pub struct Folder {
 impl Default for Folder {
     fn default() -> Self {
         Folder {
-            name: "/".to_string(),
+            // name: "/".to_string(),
             subfolders: HashSet::new(),
             files: HashSet::new(),
         }
@@ -36,7 +36,7 @@ impl Default for Folder {
 
 #[derive(Debug)]
 pub struct File {
-    name: String,
+    // name: String,
     size: usize,
 }
 
@@ -90,7 +90,7 @@ pub fn parse_input_data(input: &str) -> FileSystem {
             let scan = sscanf::sscanf!(line, "dir {String}").expect("Unable to parse dir line");
             let full_path = build_full_path(&stack, &scan);
             let folder = Folder {
-                name: full_path.clone(),
+                // name: full_path.clone(),
                 ..Default::default()
             };
             filesystem
@@ -109,7 +109,7 @@ pub fn parse_input_data(input: &str) -> FileSystem {
                 sscanf::sscanf!(line, "{usize} {String}").expect("Unable to parse file line");
             let full_path = build_full_path(&stack, &scan.1);
             let file = File {
-                name: full_path.clone(),
+                // name: full_path.clone(),
                 size: scan.0,
             };
             filesystem
@@ -166,7 +166,22 @@ pub fn day_7_part_1(data: &str) -> i64 {
 pub fn day_7_part_2(data: &str) -> i64 {
     let data = parse_input_data(data);
 
-    return 42;
+    let disk_size = 70000000;
+    let minimum_free_size = 30000000;
+
+    let total_used_size = compute_folder_size(&data, "/".to_string());
+    let currently_free_size = disk_size - total_used_size;
+    let minimum_to_delete = minimum_free_size - currently_free_size;
+
+    let size: usize = data
+        .folders
+        .iter()
+        .map(|(name, _)| compute_folder_size(&data, name.clone()))
+        .filter(|size| *size >= minimum_to_delete)
+        .min()
+        .expect("Unable to find minimum size");
+
+    return size as i64;
 }
 
 #[cfg(test)]
@@ -213,6 +228,6 @@ $ ls
 
     #[test]
     fn test_day_7_part_2() {
-        assert_eq!(day_7_part_2(EXAMPLE), 45000);
+        assert_eq!(day_7_part_2(EXAMPLE), 24933642);
     }
 }
