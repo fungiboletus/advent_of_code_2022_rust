@@ -134,7 +134,41 @@ pub fn day_9_part_1(data: &str) -> i64 {
 pub fn day_9_part_2(data: &str) -> i64 {
     let data = parse_input_data(data);
 
-    return data.len() as i64;
+    let mut visited_positions: HashSet<(i64, i64)> = HashSet::new();
+
+    let mut head_position: (i64, i64) = (0, 0);
+    let mut knot_1_position: (i64, i64) = (0, 0);
+    let mut knot_2_position: (i64, i64) = (0, 0);
+    let mut knot_3_position: (i64, i64) = (0, 0);
+    let mut knot_4_position: (i64, i64) = (0, 0);
+    let mut knot_5_position: (i64, i64) = (0, 0);
+    let mut knot_6_position: (i64, i64) = (0, 0);
+    let mut knot_7_position: (i64, i64) = (0, 0);
+    let mut knot_8_position: (i64, i64) = (0, 0);
+    let mut tail_position: (i64, i64) = (0, 0);
+
+    for instruction in data {
+        for _ in 0..instruction.steps {
+            match instruction.direction {
+                Direction::Up => head_position.1 += 1,
+                Direction::Down => head_position.1 -= 1,
+                Direction::Left => head_position.0 -= 1,
+                Direction::Right => head_position.0 += 1,
+            }
+            knot_1_position = move_tail_towards_head_if_needed(head_position, knot_1_position);
+            knot_2_position = move_tail_towards_head_if_needed(knot_1_position, knot_2_position);
+            knot_3_position = move_tail_towards_head_if_needed(knot_2_position, knot_3_position);
+            knot_4_position = move_tail_towards_head_if_needed(knot_3_position, knot_4_position);
+            knot_5_position = move_tail_towards_head_if_needed(knot_4_position, knot_5_position);
+            knot_6_position = move_tail_towards_head_if_needed(knot_5_position, knot_6_position);
+            knot_7_position = move_tail_towards_head_if_needed(knot_6_position, knot_7_position);
+            knot_8_position = move_tail_towards_head_if_needed(knot_7_position, knot_8_position);
+            tail_position = move_tail_towards_head_if_needed(knot_8_position, tail_position);
+            visited_positions.insert(tail_position);
+        }
+    }
+
+    return visited_positions.len() as i64;
 }
 
 #[cfg(test)]
@@ -149,6 +183,15 @@ R 4
 D 1
 L 5
 R 2";
+
+    const LARGER_EXAMPLE: &str = "R 5
+U 8
+L 8
+D 3
+R 17
+D 10
+L 25
+U 20";
 
     #[test]
     fn test_head_next_to_tail() {
@@ -193,6 +236,7 @@ R 2";
 
     #[test]
     fn test_day_9_part_2() {
-        assert_eq!(day_9_part_2(EXAMPLE), 45000);
+        assert_eq!(day_9_part_2(EXAMPLE), 1);
+        assert_eq!(day_9_part_2(LARGER_EXAMPLE), 36);
     }
 }
