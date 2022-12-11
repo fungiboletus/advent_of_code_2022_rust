@@ -83,9 +83,73 @@ pub fn day_8_part_1(data: &str) -> i64 {
 }
 
 pub fn day_8_part_2(data: &str) -> i64 {
-    let data = parse_input_data(data);
+    let trees_height = parse_input_data(data);
+    let dim = trees_height.dim();
 
-    return data.len() as i64;
+    //println!("{:?}", trees_height);
+
+    // for each tree, compute the "scenic score"
+    let mut max_score: i64 = 0;
+
+    // for every tree
+    for ((i, j), height) in trees_height.indexed_iter() {
+        // If it's a tree on the perimeter of the forest, its score is 0
+        if i == 0 || i == dim.0 - 1 || j == 0 || j == dim.1 - 1 {
+            continue;
+        }
+
+        // look at the trees north of it, from the tree towards the top of the outside
+        let mut score_top: i64 = 0;
+        for k in (0..i).rev() {
+            score_top += 1;
+            if trees_height[[k, j]] >= *height {
+                break;
+            }
+        }
+
+        // look at the trees south of it
+        let mut score_bottom: i64 = 0;
+        for k in i + 1..dim.0 {
+            score_bottom += 1;
+            if trees_height[[k, j]] >= *height {
+                break;
+            }
+        }
+
+        // look at the trees west of it
+        let mut score_left: i64 = 0;
+        for k in (0..j).rev() {
+            score_left += 1;
+            if trees_height[[i, k]] >= *height {
+                break;
+            }
+        }
+
+        // look at the trees east of it
+        let mut score_right: i64 = 0;
+        for k in j + 1..dim.1 {
+            score_right += 1;
+            if trees_height[[i, k]] >= *height {
+                break;
+            }
+        }
+
+        // The final score is the product of the four scores
+        let score = score_top * score_bottom * score_left * score_right;
+
+        // println!("Tree at ({}, {}):", i, j);
+        // println!("height: {}", height);
+        // println!(
+        //     "top: {} bottom: {} left: {} right: {} score: {}",
+        //     score_top, score_bottom, score_left, score_right, score,
+        // );
+
+        if score > max_score {
+            max_score = score;
+        }
+    }
+
+    return max_score;
 }
 
 #[cfg(test)]
@@ -105,6 +169,6 @@ mod tests {
 
     #[test]
     fn test_day_8_part_2() {
-        assert_eq!(day_8_part_2(EXAMPLE), 45000);
+        assert_eq!(day_8_part_2(EXAMPLE), 8);
     }
 }
